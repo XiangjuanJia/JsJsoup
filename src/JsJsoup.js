@@ -1,5 +1,7 @@
 function Jsoup() {
-	 
+	
+	var http = require('http'); 
+
     //html默认的空元素 
 	const INLINE_ELES = ['br','meta','hr','link','input','img','!DOCTYPE'];
 	//html元素属性名
@@ -15,13 +17,14 @@ function Jsoup() {
 	//html 顶级元素
 	const TOP_ELE_NAME = '#root';
 	var test = 'var';
+ 
     //解析文本文档
-	this.parseDocument=function(documentStr) {
+	this.parseDocument = function(documentStr) {
 		var index = documentStr.indexOf("<");
 		var end = documentStr.indexOf(">",index);
 		//定义栈用来存放解析元素
 		var stack = [];
-		var headEmptyEle = createElement("#root",'','');
+		var headEmptyEle = createDocumentElement(TOP_ELE_NAME);
 		//初始化栈
 		stack.push(headEmptyEle);
 
@@ -64,20 +67,35 @@ function Jsoup() {
 		  
 	};
 
+    //创建空元素
 	function createEmptyElement() {
 		return createElement('',' ','');
-	}
+	};
+
+	//创建文档元素
+	function createDocumentElement(tag) {
+		var ele = Object(createElement(tag,'',''));
+		ele.title = function() {
+			return _title(this);
+		};
+
+		ele.body = function() {
+			return _body(this);
+		}
+ 
+	   return ele;
+       
+	  
+	};
 
 	//创建元素
 	 function createElement(tag,text,attrStr) {
-		var ele = {};
+	 	var ele = {};
 		ele.node = [];
 		ele.attrs = {};
 		//ele.class=[];
 		ele.tag = tag.trim();
-		//ele.style = {};
-		ele.title = '';
-		//ele.id = '';
+	 
 		ele.comment = '';//html 代码注释
 		ele.eleText = text.trim();
 		
@@ -223,7 +241,7 @@ function Jsoup() {
 			}
 			else {
 				generateHtmlAttrStr(ele,result);
-				result.push('/>\n');
+				result.push('>\n');
 			}
 			
 		} else if (tag === TOP_ELE_NAME) {
@@ -253,7 +271,32 @@ function Jsoup() {
 		}
 		//console.log(result);
 		return result.join('');
-	}
+	};
+
+    //获取标签文本
+	function _title(node) {
+		var queue = [];
+		queue.push(node);
+		while (queue.length > 0) {
+			var tempNode = queue.shift();
+			var nodes = tempNode.node;
+			for (var i = 0;i < nodes.length;i++) {
+				if (nodes[i].tag === 'title') {
+					return nodes[i].eleText;
+				}
+				queue.push(nodes[i]);
+			}
+		}
+	};
+
+	//获取body元素
+	function _body(node) {
+		var bodys = node.getElementsByTag('body');
+		if (bodys.length > 0) {
+			return bodys[0];
+		}
+		return createEmptyElement();
+	};
 
     //生成html属性字符串
 	function generateHtmlAttrStr(node,result) {
@@ -351,6 +394,11 @@ function Jsoup() {
 	 
 	//解析属性
 	function parseAttr(str,stack,text) {
+
+		if (str !== null && str.charAt(str.length-1) ==='/') {
+			str = str.substring(0,str.length-1);
+			console.log(str);
+		}
 
 		if (str.charAt(0) !== '/') {
 			//以空字符串分隔
