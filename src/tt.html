@@ -41,6 +41,34 @@
 	  您的浏览器不支持 audio 元素。
 	</audio>
 
+	<menu>
+		<command type="command" label="Save" onclick="save()">Save</command>
+	</menu>
+
+	<menu>
+		<command type="radio" label="Left" checked onclick="setAlign('left')">Left</command>
+	</menu>
+
+	<frameset cols="25%,50%,25%">
+	  <frame src="frame_a.htm">
+	  <frame src="frame_b.htm">
+	  <frame src="frame_c.htm">
+	</frameset>
+
+	<frameset rows="25%,*,25%">
+	  <frame src="frame_a.htm">
+	  <frame src="frame_b.htm">
+	  <frame src="frame_c.htm">
+	</frameset>
+
+	<form action="demo_form.asp">
+	  <label for="male">Male</label>
+	  <input type="radio" name="sex" id="male" value="male"><br>
+	  <label for="female">Female</label>
+	  <input type="radio" name="sex" id="female" value="female"><br>
+	  <input type="submit" value="提交">
+    </form>
+
 	<input type=text name="and">
    
    <script type="text/javascript">
@@ -58,6 +86,13 @@
 		// console.log(jsDocument.getAllElements());
 		console.log(jsDocument.getElementsByClass('id1'));
 	</script>
+
+	<nav>
+		<a href="/html/">HTML</a> |
+		<a href="/css/">CSS</a> |
+		<a href="/js/">JavaScript</a> |
+		<a href="/jquery/">jQuery</a>
+    </nav>
 	 
 
 </body>

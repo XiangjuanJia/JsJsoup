@@ -9,7 +9,8 @@ function Jsoup() {
 	//html单一属性名。就可以没有值
 	const HTML_SINGLE_ARR = ['html','controls','autoplay']
 
-	const HTML_ARR = {'class':[' '],'style':{},'id':'','title':'','style':'','name':'','src':'','href':'','type':'','coords':[',']};
+	const HTML_ARR = {'class':[' '],'style':{},'id':'','title':'','style':'','name':'','src':'','href':'','type':'','coords':[','],
+	'cols':[','],'rows':[',']};
 
 	//html 顶级元素
 	const TOP_ELE_NAME = '#root';
