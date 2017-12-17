@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html id ="test">
+<head>
+	<title>test</title>
+	<script type="text/javascript" src = "JsJsoup.js"></script>
+	<style type="text/css">
+		.dd{
+			background: #fff;
+			font-variant-position: inherit;
+		}
+
+		#aa{
+			font-size: 13px;
+		}
+
+	</style>
+</head>
+
+<body>
+
+   <div id = "id1" class="id1 dsf sfsf " style="background: dd;font-size: add">
+   	  <div id="id2" class="id1">舒服舒服
+   	  	 <div id="id3" class="id1">的方式方式</div>
+   	  </div>
+   </div>
+   <div class="id1">
+   	  <div class="id1">舒服点</div>
+   </div> 
+
+    <object data="planets.gif" alt="Planets" type="image/gif" usemap="#Map1">
+		<map name="Map1">
+		<a href="sun.htm" shape="rect" coords="0,0,82,126">太阳</a>
+		<a href="mercur.htm" shape="circle" coords="90,58,3">水星</a>
+		<a href="venus.htm" shape="circle" coords="124,58,8">金星</a>
+		</map>
+	</object>
+
+	<audio controls muted>
+	  <source src="horse.ogg" type="audio/ogg">
+	  <source src="horse.mp3" type="audio/mpeg">
+	  您的浏览器不支持 audio 元素。
+	</audio>
+
+	<input type=text name="and">
+   
+   <script type="text/javascript">
+		var html = document.getElementsByTagName('html')[0].outerHTML;
+		console.log(html);
+		var jsDocument = jsoup.parseDocument(html);
+		console.log(jsDocument);
+		// console.log(jsDocument.getElementById('hi'));
+		// console.log(jsDocument.getElementById('hi').text());
+
+		// console.log(jsDocument.getElementById('hi').attr("style"));
+		// console.log(jsDocument.getElementById('hi').attr("title"));
+		// console.log(jsDocument.getElementById('hi').getElementsByTag('div'));
+		// console.log(jsDocument.getElementsByClass('dd'));
+		// console.log(jsDocument.getAllElements());
+		console.log(jsDocument.getElementsByClass('id1'));
+	</script>
+	 
+
+</body>
+
+
+
+</html>
