@@ -14,7 +14,13 @@ app.get('/test', function (req, res) {
     var jsDocument = jsoup.parseDocument(content);
    
     var bodyEle = jsDocument.body();
-    console.log(bodyEle.html());
+    var frameSetEle = bodyEle.getElementById('frameset1');
+    var frameChild = frameSetEle.children();
+    frameSetEle.addClass('hahah');
+    frameSetEle.attr('cols','34');
+    frameSetEle.attr('key','nnn');
+    console.log(frameSetEle.getAttr('cols'));
+    var actionEle = jsDocument.getElementsByAttribute('action');
     debugger;
     // console.log(jsDocument.title());
     // debugger;

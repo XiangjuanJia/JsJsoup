@@ -3,7 +3,7 @@ function Jsoup() {
 	var http = require('http'); 
 
     //html默认的空元素 
-	const INLINE_ELES = ['br','meta','hr','link','input','img','!DOCTYPE'];
+	const INLINE_ELES = ['br','meta','hr','link','input','img','!DOCTYPE','frame'];
 	//html元素属性名
 	const HTML_ARR_NAMES = ['accesskey','class','contenteditable','contextmenu','dir','draggable',
 	'dropzone','hidden','lang','spellcheck','style','tabindex','title','translate','name','src','href','type','id'];
@@ -115,8 +115,8 @@ function Jsoup() {
 		};
 
 		//获取当前元素的属性值
-		ele.attr = function(key) {
-			return _attr(this,key);
+		ele.getAttr = function(key) {
+			return _getAttr(this,key);
 		};
 
 		//获取当前元素的所有元素
@@ -133,6 +133,26 @@ function Jsoup() {
 			return _getElementsByClass(this,className);
 		};
 
+		//通过属性名获取元素
+		ele.getElementsByAttribute = function(key) {
+			return _getElementsByAttribute(this,key);
+		};
+
+		//给元素添加类名
+		ele.addClass = function(className) {
+			_addClass(this,className);
+		};
+
+		//设置元素的属性值
+		ele.attr = function(key,value) {
+			_attr(this,key,value);
+		};
+
+		//获取当前元素的子元素
+		ele.children = function () {
+			return _children(this);
+		};
+ 
 		generateEle(attrStr,ele);
 	   return ele;
 	};
@@ -199,7 +219,26 @@ function Jsoup() {
 		return elements;
 	};
 
+	//通过属性名获取元素
+	function _getElementsByAttribute(node,key) {
+		var elements = [];
+		var stack = [];
+		stack.push(node);
+		while (stack.length > 0) {
+			var tNode = stack.pop();
+			if (tNode.attrs.hasOwnProperty(key)) {
+				elements.push(tNode);
+			}
+			 
+			var nodes = tNode.node;
+			for (var i = nodes.length-1;i >= 0;i--) {
+				stack.push(nodes[i]);
+			}
+		}
+		return elements;
+	};
 
+	//元素的文本值
 	function _text(node) {
 		var result = [];
 		var stack = [];
@@ -289,6 +328,16 @@ function Jsoup() {
 		}
 	};
 
+	function _addClass(node,className) {
+		if (node.attrs.hasOwnProperty('class')) {
+			node.attrs['class'].push(className);
+		} else {
+			var classS = [];
+			classS.push(className);
+			node.attrs['class'] = classS;
+		}
+	}
+
 	//获取body元素
 	function _body(node) {
 		var bodys = node.getElementsByTag('body');
@@ -376,19 +425,65 @@ function Jsoup() {
 		return result;
 	};
 
-	function _attr(node,key) {
-		var v = node[key];
-		if (isArray (v)) {
-			v = v.join('');
-		}
-		else if (isObject(v)) {
-			var result = '';
-			for (var key in v) {
-				result = result + key+':' + v[key] + ';';
+	function _getAttr(node,key) {
+		if (node.attrs.hasOwnProperty(key)) {
+			var nodeV = node.attrs[key];
+			if (isArray(nodeV)) {
+				var splitChar = HTML_ARR[key][0];
+				return nodeV.join(splitChar);
 			}
-			v = result.substring(0,result.length-1);
+			else if (isObject(nodeV)) {
+				var result = '';
+				for (var key in nodeV) {
+					result = result + key+':' + nodeV[key] + ';';
+				}
+				result = result.substring(0,result.length-1);
+				return result;
+			}
+			return nodeV;
 		}
-		return v;
+	};
+
+	//获取当前元素的子元素
+	function _children(node) {
+		return node.node;
+	}
+
+	//添加元素的属性简直对
+	function _attr(node,key,value) {
+		if (node.attrs.hasOwnProperty(key)) {
+			var eleType = HTML_ARR[key];
+			//处理数组
+			if (isArray(eleType)) {
+				if (!node.attrs[key].contains(value)) {
+					node.attrs[key].push(value);
+				}
+			}
+			//处理对象
+			else if (isObject(eleType)) {
+				//TODO
+			}
+			else {
+				node.attrs[key] =value;
+			}
+			debugger;
+		}
+		else {
+			var eleType = HTML_ARR[key];
+			//处理数组
+			if (isArray(eleType)) {
+				var eleArrs = [];
+				eleArrs.push(value);
+				node.attrs[key] = eleArrs;
+			}
+			//处理对象
+			else if (isObject(eleType)) {
+				//TODO
+			}
+			else {
+				node.attrs[key] =value;
+			}
+		}
 	};
 
 	 
