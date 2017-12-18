@@ -1,6 +1,6 @@
 function Jsoup() {
 	
-	var http = require('http'); 
+	var http = require('request-promise'); 
 
     //html默认的空元素 
 	const INLINE_ELES = ['br','meta','hr','link','input','img','!DOCTYPE','frame'];
@@ -16,8 +16,18 @@ function Jsoup() {
 
 	//html 顶级元素
 	const TOP_ELE_NAME = '#root';
-	var test = 'var';
- 
+
+	//注释元素开始
+	const COMMENT_TAG_STAR = '!--';
+	const COMMENT_TAG_END = '--';
+
+	//解析文档通过http的get请求
+	this.parseDocumentByHttpGet = function (url) {
+		//get 请求外网  
+		return http(url);
+
+	};
+
     //解析文本文档
 	this.parseDocument = function(documentStr) {
 		var index = documentStr.indexOf("<");
@@ -84,8 +94,6 @@ function Jsoup() {
 		}
  
 	   return ele;
-       
-	  
 	};
 
 	//创建元素
@@ -293,6 +301,16 @@ function Jsoup() {
 			generateHtmlAttrStr(ele,result);
 			result.push('>\n');
 		}
+
+		if (ele.hasOwnProperty('comment')) {
+			if (ele.comment !=='') {
+				var commentLevel = level + 1;
+				var commentLevelStr = _eleLevel(commentLevel);
+				result.push(commentLevelStr + '<!-- ');
+				result.push(ele.comment);
+				result.push(' -->\n');
+			}
+		}
 		
 		var nodes = ele.node;
 		level = level +1;
@@ -466,7 +484,6 @@ function Jsoup() {
 			else {
 				node.attrs[key] =value;
 			}
-			debugger;
 		}
 		else {
 			var eleType = HTML_ARR[key];
@@ -492,7 +509,6 @@ function Jsoup() {
 
 		if (str !== null && str.charAt(str.length-1) ==='/') {
 			str = str.substring(0,str.length-1);
-			console.log(str);
 		}
 
 		if (str.charAt(0) !== '/') {
@@ -509,13 +525,26 @@ function Jsoup() {
 			} else {
 				tag = str;
 			}
-			element =  createElement(tag,text,attrStr);
-			var tempNode = stack[stack.length-1];
-			tempNode.node.push(element);
-			//如果不是空元素，则压入栈顶
-			if (!INLINE_ELES.contains(tag)) {
-				stack.push(element);
+			if (tag === COMMENT_TAG_STAR ) {
+				var tempNode = stack[stack.length-1];
+				var comment_str = attrStr.substring(0,attrStr.length-3);
+				tempNode.comment = comment_str.trim();
 			}
+			else if (tag.substring(0,3) === COMMENT_TAG_STAR) {
+				var tempNode = stack[stack.length-1];
+				var comment_str =  tag.substring(3,tag.length-2);
+				tempNode.comment = comment_str.trim();
+			}
+			else {
+				element =  createElement(tag,text,attrStr);
+				var tempNode = stack[stack.length-1];
+				tempNode.node.push(element);
+				//如果不是空元素，则压入栈顶
+				if (!INLINE_ELES.contains(tag)) {
+					stack.push(element);
+				}
+			}
+			
 		} else {
 			//存放结束标记符
 			var tag = '';
@@ -524,7 +553,7 @@ function Jsoup() {
 			if (index !== -1) {
 				tag = str.substring(0,index);
 			}
-			//说明书写规范
+			//说明html书写规范
 			else {
 				tag = str.substring(1,str.length);
 				//console.log(tag);
@@ -540,7 +569,7 @@ function Jsoup() {
 					break;
 				}
 			}
-
+			//从匹配的元素开始依次弹出元素
 			stack.splice(matchIndex,stack.length - matchIndex);
 		}
 	};
@@ -618,6 +647,7 @@ function Jsoup() {
     					//处理普通字符串
     					if (isStr(eleV)) {
     						//element[key] = value; 
+
     						element.attrs[key] = value;
     					} else if (isArray(eleV)) {
     						element.attrs[key] = filterArr(value,eleV[0]);
@@ -635,6 +665,9 @@ function Jsoup() {
     				} else {
     					//所有的未知属性统一作为字符串处理
     					element.attrs[key] = value;
+    					if (key === undefined) {
+    						debugger;
+    					}
     				}
     				// //回复到原始值
     				 key = '';

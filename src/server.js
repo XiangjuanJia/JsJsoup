@@ -7,21 +7,34 @@ var express = require('express');
 var app = express();
  
 app.get('/test', function (req, res) {
+
+    var html = jsoup.parseDocumentByHttpGet('http://sc.chinaz.com/tag_tupian/maozuo_8.html').then(function(htmlStr){
+
+        var jsDocument = jsoup.parseDocument(htmlStr);
+        console.log(jsDocument.html());
+        var containeEle = jsDocument.getElementById('container');
+        var imgEles = containeEle.getElementsByTag('img');
+        for (var i = 0;i < imgEles.length;i ++) {
+            console.log(imgEles[i].getAttr('src2'));
+        }
+         debugger;
+    });
    
-    var data = fs.readFileSync('tt.html');
+    // var data = fs.readFileSync('tt.html');
     
-    var content = data.toString();
-    var jsDocument = jsoup.parseDocument(content);
+    // var content = data.toString();
+    // var jsDocument = jsoup.parseDocument(content);
    
-    var bodyEle = jsDocument.body();
-    var frameSetEle = bodyEle.getElementById('frameset1');
-    var frameChild = frameSetEle.children();
-    frameSetEle.addClass('hahah');
-    frameSetEle.attr('cols','34');
-    frameSetEle.attr('key','nnn');
-    console.log(frameSetEle.getAttr('cols'));
-    var actionEle = jsDocument.getElementsByAttribute('action');
-    debugger;
+    // var bodyEle = jsDocument.body();
+    // var frameSetEle = bodyEle.getElementById('frameset1');
+    // var frameChild = frameSetEle.children();
+    // frameSetEle.addClass('hahah');
+    // frameSetEle.attr('cols','34');
+    // frameSetEle.attr('key','nnn');
+    // console.log(frameSetEle.getAttr('cols'));
+    // var actionEle = jsDocument.getElementsByAttribute('action');
+    // console.log(jsDocument.html());
+    // debugger;
     // console.log(jsDocument.title());
     // debugger;
     // console.log(jsDocument.text());
