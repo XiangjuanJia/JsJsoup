@@ -1,5 +1,5 @@
 var http = require('http');
-var fs = require("fs");
+
 var Jsoup = require('./JsJsoup');
 var jsoup = new Jsoup();
 
@@ -8,18 +8,31 @@ var app = express();
  
 app.get('/test', function (req, res) {
 
-    var html = jsoup.parseDocumentByHttpGet('http://sc.chinaz.com/tag_tupian/maozuo_8.html').then(function(htmlStr){
+    // jsoup.parseDocumentFromHttpGet('http://sc.chinaz.com/tag_tupian/maozuo_8.html').then(function(htmlStr){
 
-        var jsDocument = jsoup.parseDocument(htmlStr);
-        console.log(jsDocument.html());
-        var containeEle = jsDocument.getElementById('container');
-        var imgEles = containeEle.getElementsByTag('img');
-        for (var i = 0;i < imgEles.length;i ++) {
-            console.log(imgEles[i].getAttr('src2'));
-        }
-         debugger;
-    });
-   
+    //     var jsDocument = jsoup.parseDocument(htmlStr);
+    //     console.log(jsDocument.html());
+    //     var containeEle = jsDocument.getElementById('container');
+    //     var imgEles = containeEle.getElementsByTag('img');
+    //     for (var i = 0;i < imgEles.length;i ++) {
+    //         console.log(imgEles[i].getAttr('src2'));
+    //     }
+    //      debugger;
+    // });
+
+    var jsDocument = jsoup.parseDocumentFromFile('tt.html');
+    console.log(jsDocument.html());
+    var bodyEle = jsDocument.body();
+    var frameSetEle = bodyEle.getElementById('frameset1');
+    var headEle = jsDocument.head();
+    jsDocument.setTitle("hello world");
+    var titleEle = jsDocument.title();
+    var charset = jsDocument.charset();
+
+    var tempEle = jsDocument.createElement('div');
+    debugger;
+
+    
     // var data = fs.readFileSync('tt.html');
     
     // var content = data.toString();

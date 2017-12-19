@@ -1,6 +1,8 @@
 function Jsoup() {
 	
 	var http = require('request-promise'); 
+	var fs = require("fs");
+	
 
     //html默认的空元素 
 	const INLINE_ELES = ['br','meta','hr','link','input','img','!DOCTYPE','frame'];
@@ -12,7 +14,7 @@ function Jsoup() {
 	const HTML_SINGLE_ARR = ['html','controls','autoplay']
 
 	const HTML_ARR = {'class':[' '],'style':{},'id':'','title':'','style':'','name':'','src':'','href':'','type':'','coords':[','],
-	'cols':[','],'rows':[',']};
+	'cols':[','],'rows':[','],'content':''};
 
 	//html 顶级元素
 	const TOP_ELE_NAME = '#root';
@@ -22,10 +24,17 @@ function Jsoup() {
 	const COMMENT_TAG_END = '--';
 
 	//解析文档通过http的get请求
-	this.parseDocumentByHttpGet = function (url) {
+	this.parseDocumentFromHttpGet = function (url) {
 		//get 请求外网  
 		return http(url);
 
+	};
+
+	//解析html文档从文件中
+	this.parseDocumentFromFile = function(fileName) {
+		var data = fs.readFileSync(fileName);
+		var content = data.toString();
+		return this.parseDocument(content);
 	};
 
     //解析文本文档
@@ -77,27 +86,48 @@ function Jsoup() {
 		  
 	};
 
+	
     //创建空元素
 	function createEmptyElement() {
-		return createElement('',' ','');
+		return _createElement('',' ','');
 	};
 
 	//创建文档元素
 	function createDocumentElement(tag) {
-		var ele = Object(createElement(tag,'',''));
+		var ele = Object(_createElement(tag,'',''));
 		ele.title = function() {
 			return _title(this);
 		};
 
 		ele.body = function() {
 			return _body(this);
-		}
+		};
+		//获取head元素
+		ele.head = function() {
+			return _head(this);
+		};
+
+		//设置文本的title值
+		ele.setTitle = function(text) {
+			return _setTitle(this,text);
+		};
+
+		//获取文档的charset值
+		ele.charset = function() {
+			return _charset(this);
+		};
+
+		//创建一个以tag为内容的标签
+		ele.createElement = function(tag) {
+			return _createElement(tag,'','');
+		};
+
  
 	   return ele;
 	};
 
 	//创建元素
-	 function createElement(tag,text,attrStr) {
+	 function _createElement(tag,text,attrStr) {
 	 	var ele = {};
 		ele.node = [];
 		ele.attrs = {};
@@ -159,6 +189,11 @@ function Jsoup() {
 		//获取当前元素的子元素
 		ele.children = function () {
 			return _children(this);
+		};
+
+		//检测一个元素是否包含某个属性
+		ele.hasAttr = function (key) {
+			return _hasAttr(this,key);
 		};
  
 		generateEle(attrStr,ele);
@@ -265,9 +300,39 @@ function Jsoup() {
 		return  result.join('');
 	};
 
+	//设置文档的title值
+	function _setTitle(node,text) {
+		var titleEles = node.getElementsByTag('title');
+		if (titleEles.length > 0) {
+			titleEles[0].eleText = text;
+		}
+	};
+
+	function _charset(node) {
+		var metaEles = node.getElementsByTag('meta');
+		for (var i = 0; i < metaEles.length; i++) {
+			if (metaEles[i].hasAttr('charset')) {
+				return metaEles[i].getAttr('charset');
+			}
+			else if (metaEles[i].hasAttr('content')) {
+				var eleV = metaEles[i].getAttr('content');
+				var index = eleV.indexOf(';');
+				if (index !== -1) {
+					var temV = eleV.split(';');
+					var charsetV = temV[1];
+					var equalIndex = charsetV.indexOf('=');
+					if (equalIndex !== -1) {
+						return charsetV.split('=')[1];
+					}
+				}
+			}
+		}
+		return '';
+	}
+
 	function _html(node) {
 		return _htmlRec(node,-1);
-	}
+	};
 
     /**
      *递归的遍历Html元素。
@@ -359,6 +424,15 @@ function Jsoup() {
 	//获取body元素
 	function _body(node) {
 		var bodys = node.getElementsByTag('body');
+		if (bodys.length > 0) {
+			return bodys[0];
+		}
+		return createEmptyElement();
+	};
+
+	//获取head元素
+	function _head(node) {
+		var bodys = node.getElementsByTag('head');
 		if (bodys.length > 0) {
 			return bodys[0];
 		}
@@ -462,6 +536,13 @@ function Jsoup() {
 		}
 	};
 
+	function _hasAttr (node,key) {
+		if (node.attrs.hasOwnProperty(key)) {
+			return true;
+		}
+		return false;
+	};
+
 	//获取当前元素的子元素
 	function _children(node) {
 		return node.node;
@@ -509,6 +590,7 @@ function Jsoup() {
 
 		if (str !== null && str.charAt(str.length-1) ==='/') {
 			str = str.substring(0,str.length-1);
+			 
 		}
 
 		if (str.charAt(0) !== '/') {
@@ -536,7 +618,7 @@ function Jsoup() {
 				tempNode.comment = comment_str.trim();
 			}
 			else {
-				element =  createElement(tag,text,attrStr);
+				element =  _createElement(tag,text,attrStr);
 				var tempNode = stack[stack.length-1];
 				tempNode.node.push(element);
 				//如果不是空元素，则压入栈顶
@@ -626,11 +708,12 @@ function Jsoup() {
 
     	for (var i = 0; i < attrStr.length ;i++) {
     		var char = attrStr[i];
-    		if (char ==='=') {
+    		if (char ==='=' && vBeginValue === '') {
     			//key结束，解析出key
     			key = stack.join('');
     			key = key.trim();
     			stack = [];
+    			 
     		}
     		else if (char ==='"' || char ==="'") {
     			if (vBeginValue === '') {
@@ -647,8 +730,8 @@ function Jsoup() {
     					//处理普通字符串
     					if (isStr(eleV)) {
     						//element[key] = value; 
-
     						element.attrs[key] = value;
+    						 
     					} else if (isArray(eleV)) {
     						element.attrs[key] = filterArr(value,eleV[0]);
     						//element[key] = filterArr(value);
