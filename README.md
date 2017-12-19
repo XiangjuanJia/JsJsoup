@@ -2,13 +2,39 @@
 JsJsoup 是一款javascript 的HTML解析器，可直接解析HTML文本内容。它提供了一套非常省力的API，可通过DOM的操作方法来取出和操作数据。
 
 ### 解析和遍历一个HTML文档
+
+#### 解析HTML文档通过html字符串
+
 ```javascript
    var  html = "<html><head><title>First parse</title></head>"
  + "<body><p>Parsed HTML into a doc.</p></body></html>";
   
     var jsDocument = jsoup.parseDocument(html);
 ```
+#### 解析HTML 文档通过URL
+
+```javascript
+  jsoup.parseDocumentByHttpGet('http://sc.chinaz.com/tag_tupian/maozuo_8.html').then(function(htmlStr){
+
+        var jsDocument = jsoup.parseDocument(htmlStr);
+        console.log(jsDocument.html());
+        var containeEle = jsDocument.getElementById('container');
+        var imgEles = containeEle.getElementsByTag('img');
+        for (var i = 0;i < imgEles.length;i ++) {
+            console.log(imgEles[i].getAttr('src2'));
+        }
+         debugger;
+    });
+```
+
+#### 解析HTML 文档从文件中
+```javascript
+  var jsDocument = jsoup.parseDocumentFromFile(fileName);
+  如：var jsDocument = jsoup.parseDocumentFromFile('tt.html');
+```
+
 jsDocument继承Element。一旦你得到jSDocument，你可以调用它相关的方法获取Element，或者Elements元素集合。
+
 ### Element和Document通用的属性及方法
  + node: 当前元素的子节点，类型：[]
  + attrs: 当前元素的属性集合，类型：{}。把一个元素的所有属性值都存放到此对象中，如class，style，id ,src等。
