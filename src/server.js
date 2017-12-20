@@ -21,6 +21,7 @@ app.get('/test', function (req, res) {
     // });
 
     var jsDocument = jsoup.parseDocumentFromFile('tt.html');
+    console.log(jsDocument.text());
     console.log(jsDocument.html());
     var bodyEle = jsDocument.body();
     var frameSetEle = bodyEle.getElementById('frameset1');
