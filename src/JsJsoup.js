@@ -18,7 +18,7 @@ function Jsoup() {
 	'dropzone','hidden','lang','spellcheck','style','tabindex','title','translate','name','src','href','type','id'];
 
 	//html单一属性名。就可以没有值
-	const HTML_SINGLE_ARR = ['html','controls','autoplay']
+	const HTML_SINGLE_ARR = ['html','controls','autoplay','disabled']
 
 	const HTML_ARR = {'class':[' '],'style':{},'id':'','title':'','style':'','name':'','src':'','href':'','type':'','coords':[','],
 	'cols':[','],'rows':[','],'content':''};
