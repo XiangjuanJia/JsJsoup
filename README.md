@@ -11,27 +11,7 @@ JsJsoup 是一款javascript 的HTML解析器，可直接解析HTML文本内容�
   
     var jsDocument = jsoup.parseDocument(html);
 ```
-#### 解析HTML 文档通过URL
-
-```javascript
-  jsoup.parseDocumentByHttpGet('http://sc.chinaz.com/tag_tupian/maozuo_8.html').then(function(htmlStr){
-
-        var jsDocument = jsoup.parseDocument(htmlStr);
-        console.log(jsDocument.html());
-        var containeEle = jsDocument.getElementById('container');
-        var imgEles = containeEle.getElementsByTag('img');
-        for (var i = 0;i < imgEles.length;i ++) {
-            console.log(imgEles[i].getAttr('src2'));
-        }
-         debugger;
-    });
-```
-
-#### 解析HTML 文档从文件中
-```javascript
-  var jsDocument = jsoup.parseDocumentFromFile(fileName);
-  如：var jsDocument = jsoup.parseDocumentFromFile('tt.html');
-```
+#### 从文件中，或者网络上读取Html文件自己在业务代码中封装。
 
 jsDocument继承Element。一旦你得到jSDocument，你可以调用它相关的方法获取Element，或者Elements元素集合。
 

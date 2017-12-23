@@ -1,9 +1,5 @@
 function Jsoup() {
 	
-	var http = require('request-promise'); 
-	var fs = require("fs");
-	
-
     //html默认的不需要关闭标签的元素 
 	const INLINE_ELES = ['br','meta','hr','link','input','img','!DOCTYPE','frame','#text','#comment'];
 	//html元素属性名
@@ -23,19 +19,7 @@ function Jsoup() {
 	const COMMENT_TAG_STAR = '!--';
 	const COMMENT_TAG_END = '--';
 
-	//解析文档通过http的get请求
-	this.parseDocumentFromHttpGet = function (url) {
-		//get 请求外网  
-		return http(url);
-
-	};
-
-	//解析html文档从文件中
-	this.parseDocumentFromFile = function(fileName) {
-		var data = fs.readFileSync(fileName);
-		var content = data.toString();
-		return this.parseDocument(content);
-	};
+ 
 
     //解析文本文档
 	this.parseDocument = function(documentStr) {

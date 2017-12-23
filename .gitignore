@@ -10,3 +10,4 @@
 *.cache
 *.ilk
 *.log
+src/*
