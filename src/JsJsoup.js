@@ -77,7 +77,7 @@ function Jsoup() {
 				}
 
 				end = documentStr.indexOf(">",index);
-				debugger;
+				 
 			}
 			else {
 				//合法的文本，创建数组传递索引
@@ -88,7 +88,7 @@ function Jsoup() {
 				if (commentStr !== '') {
 					var topEle = stack[stack.length-1];
 					topEle.node.push(createCommentNode(commentStr.trim()));
-					//topEle.comment = commentStr;
+					 
 					//更新结束位置
 					end = indexArr[0];
 					var text = "";
@@ -221,7 +221,14 @@ function Jsoup() {
 		ele.tag = '#comment';
 		ele.eleText = textStr;
 		return ele;
-	}
+	};
+	//创建html的!doctype元素
+	function createDocTypeNode(textStr) {
+		var ele = _createElement('','','');
+		ele.tag = '!DOCTYPE';
+		ele.attrs[textStr] = null;
+		return ele;
+	};
 
 	//创建元素
 	 function _createElement(tag,text,attrStr) {
@@ -230,8 +237,7 @@ function Jsoup() {
 		ele.attrs = {};
 		//ele.class=[];
 		ele.tag = tag.trim();
-	 
-		ele.comment = '';//html 代码注释
+	  
 		ele.eleText = text.trim();
 
 		//当前元素的父节点
@@ -390,8 +396,12 @@ function Jsoup() {
 			var tNode = stack.pop();
 			if (tNode.tag !=='#root') {
 				if (tNode.tag ==='#text' && tNode.pNode.tag !=='style' && tNode.pNode.tag !=='script') {
-					result.push(tNode.eleText+' ');
-					//debugger;
+					//过滤注释元素的文本
+					if(tNode.tag !=='#comment') {
+						result.push(tNode.eleText+' ');
+						//debugger;
+					}
+					
 				}
 			}
 			
@@ -443,6 +453,7 @@ function Jsoup() {
      */
 	function _htmlRec(ele,level) {
 		var result = [];
+		 
 		var tag = ele.tag;
 		var levelStr = _eleLevel(level);
 		//解决内联元素
@@ -455,7 +466,7 @@ function Jsoup() {
 			}
 			else if (tag === '#comment') {
 				result.push(levelStr);
-				result.push('<-- ');
+				result.push('<!-- ');
 				result.push(ele.eleText);
 				result.push(' -->\n');
 			}
@@ -474,7 +485,7 @@ function Jsoup() {
 			}
 			
 		} else if (tag === TOP_ELE_NAME) {
-			//顶级根元素不作处理
+			//顶级根元素不作处理 #root
 		} else {
 			//处理块元素
 			result.push(levelStr);
@@ -484,19 +495,10 @@ function Jsoup() {
 			result.push('>\n');
 		}
 
-		if (ele.hasOwnProperty('comment')) {
-			if (ele.comment !=='') {
-				var commentLevel = level + 1;
-				var commentLevelStr = _eleLevel(commentLevel);
-				result.push(commentLevelStr + '<!-- ');
-				result.push(ele.comment);
-				result.push(' -->\n');
-			}
-		}
-		
 		var nodes = ele.node;
 		level = level +1;
-		for (var i = 0;i<nodes.length;i++) {
+		 
+		for (var i = 0;i< nodes.length;i++) {
 			result.push(_htmlRec(nodes[i],level));
 		}
 		
@@ -705,11 +707,12 @@ function Jsoup() {
 	 
 	//解析属性
 	function parseAttr(str,stack,text) {
-		//处理单元素:如<br/>
+		//处理单元素:如<br/> .<br>
 		if (str !== null && str.charAt(str.length-1) ==='/') {
 			str = str.substring(0,str.length-1);
 			 
 		}
+
 		//处理元素的开始标签
 		if (str.charAt(0) !== '/') {
 			//以空字符串分隔
@@ -725,39 +728,32 @@ function Jsoup() {
 			} else {
 				tag = str;
 			}
-			element =  _createElement(tag,text,attrStr);
-			text = text.trim();
-			if (text !=='') {
-				var textNode = createTextNode(text);
-				textNode.pNode = element;
-				element.node.push(textNode);
+			 
+			if (tag ==='!DOCTYPE') {
+				element = createDocTypeNode(attrStr);
+				var tempNode = stack[stack.length-1];
+				tempNode.node.push(element);
+				//如果不是空元素，则压入栈顶
+				if (!INLINE_ELES.contains(tag)) {
+					stack.push(element);
+				}
 			}
-			var tempNode = stack[stack.length-1];
-			element.pNode = tempNode;
-			tempNode.node.push(element);
-			//如果不是空元素，则压入栈顶
-			if (!INLINE_ELES.contains(tag)) {
-				stack.push(element);
+			else {
+				element =  _createElement(tag,text,attrStr);
+				text = text.trim();
+				if (text !=='') {
+					var textNode = createTextNode(text);
+					textNode.pNode = element;
+					element.node.push(textNode);
+				}
+				var tempNode = stack[stack.length-1];
+				element.pNode = tempNode;
+				tempNode.node.push(element);
+				//如果不是空元素，则压入栈顶
+				if (!INLINE_ELES.contains(tag)) {
+					stack.push(element);
+				}
 			}
-			// if (tag === COMMENT_TAG_STAR ) {
-			// 	var tempNode = stack[stack.length-1];
-			// 	var comment_str = attrStr.substring(0,attrStr.length-3);
-			// 	tempNode.comment = comment_str.trim();
-			// }
-			// else if (tag.substring(0,3) === COMMENT_TAG_STAR) {
-			// 	var tempNode = stack[stack.length-1];
-			// 	var comment_str =  tag.substring(3,tag.length-2);
-			// 	tempNode.comment = comment_str.trim();
-			// }
-			// else {
-			// 	element =  _createElement(tag,text,attrStr);
-			// 	var tempNode = stack[stack.length-1];
-			// 	tempNode.node.push(element);
-			// 	//如果不是空元素，则压入栈顶
-			// 	if (!INLINE_ELES.contains(tag)) {
-			// 		stack.push(element);
-			// 	}
-			// }
 			
 		}
 
