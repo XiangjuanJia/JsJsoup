@@ -1,7 +1,18 @@
 function Jsoup() {
 	
     //html默认的不需要关闭标签的元素 
-	const INLINE_ELES = ['br','meta','hr','link','input','img','!DOCTYPE','frame','#text','#comment'];
+	const NO_NEED_CLOSE_ELE = ['br','meta','hr','link','input','img','!DOCTYPE','frame','#text','#comment'];
+
+	//html 行内元素元素
+	const IN_LINE_ELE = ['b','big', 'i','small','tt','abbr', 'acronym', 'cite', 'code', 'dfn', 'em',
+	 'kbd', 'strong', 'samp', 'var','a', 'bdo', 'br', 'img', 'map', 'object', 'q', 'script', 'span', 'sub', 'sup'
+	 ,'button', 'input', 'label', 'select', 'textarea'];
+
+	 //html块元素
+	const BLOCK_ELE = ['address','article','aside','audio','blockquote','canvas','dd','div','dl','fieldset'
+	,'figcaption','figure','footer','form','h1','h2','h3','h4','h5','h6','header','hgroup','hr','noscript',
+	'ol','output','p','pre','section','table','tfoot','ul','video'];
+
 	//html元素属性名
 	const HTML_ARR_NAMES = ['accesskey','class','contenteditable','contextmenu','dir','draggable',
 	'dropzone','hidden','lang','spellcheck','style','tabindex','title','translate','name','src','href','type','id'];
@@ -224,6 +235,13 @@ function Jsoup() {
 	  
 		ele.eleText = text.trim();
 
+		if (BLOCK_ELE.contains(tag)) {
+			ele.block = true;
+		}
+		else {
+			ele.block = false;
+		}
+
 		//当前元素的父节点
 		ele.pNode = {};
 		
@@ -285,6 +303,12 @@ function Jsoup() {
 		ele.hasAttr = function (key) {
 			return _hasAttr(this,key);
 		};
+
+		//检测此元素是否是块元素
+		ele.isBlock = function() {
+			return this.block;
+		};
+
  
 		generateEle(attrStr,ele);
 	   return ele;
@@ -718,7 +742,7 @@ function Jsoup() {
 				var tempNode = stack[stack.length-1];
 				tempNode.node.push(element);
 				//如果不是空元素，则压入栈顶
-				if (!INLINE_ELES.contains(tag)) {
+				if (!NO_NEED_CLOSE_ELE.contains(tag)) {
 					stack.push(element);
 				}
 			}
@@ -734,7 +758,7 @@ function Jsoup() {
 				element.pNode = tempNode;
 				tempNode.node.push(element);
 				//如果不是空元素，则压入栈顶
-				if (!INLINE_ELES.contains(tag)) {
+				if (!NO_NEED_CLOSE_ELE.contains(tag)) {
 					stack.push(element);
 				}
 			}
@@ -782,7 +806,7 @@ function Jsoup() {
 
     //判断一个元素是否是内联元素
 	function isInline(tag) {
-		if (INLINE_ELES.contains(tag)) {
+		if (NO_NEED_CLOSE_ELE.contains(tag)) {
 			return true;
 		}
 		return false;
